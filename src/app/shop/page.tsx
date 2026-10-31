@@ -54,7 +54,7 @@ function ShopView({ params }: { params: URLSearchParams }) {
         <label className="search-field">
           <Search size={16} aria-hidden="true" />
           <span className="sr-only">Search products</span>
-          <input placeholder="Search shirts, dresses, linen…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input placeholder="Search by name or category" value={q} onChange={(e) => setQ(e.target.value)} />
         </label>
         <label><span className="sr-only">For</span>
           <select value={audience} onChange={(e) => setAudience(e.target.value)}>

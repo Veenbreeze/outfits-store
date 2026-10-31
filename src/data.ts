@@ -1,4 +1,4 @@
-import type { Product } from './types';
+import type { CartLine, Product } from './types';
 
 const photo = (id: string, width = 900) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=85`;
 
@@ -82,18 +82,56 @@ export const categories = Array.from(new Set(products.map((p) => p.category)));
 /** Pieces styled together in the homepage "Shop the look" section. */
 export const lookIds = ['vb-001', 'vb-003', 'vb-005'];
 
+export const navLinks = [
+  { href: '/shop?sort=newest', label: 'New in' },
+  { href: '/shop?audience=Women', label: 'Women' },
+  { href: '/shop?audience=Men', label: 'Men' },
+  { href: '/shop?category=Shirts', label: 'Shirts' },
+  { href: '/shop?sale=1', label: 'Sale', sale: true },
+];
+
+export const footerShopLinks = [
+  { href: '/shop?sort=newest', label: 'New in' },
+  { href: '/shop?audience=Women', label: 'Women' },
+  { href: '/shop?audience=Men', label: 'Men' },
+  { href: '/shop?sale=1', label: 'Sale' },
+  { href: '/virtual-store', label: 'Virtual boutique' },
+];
+
+export const footerHelpLinks = [
+  { href: '/contact#delivery', label: 'Delivery & rates' },
+  { href: '/contact#exchanges', label: 'Exchanges & returns' },
+  { href: '/contact#sizes', label: 'Size guide' },
+  { href: '/contact', label: 'Contact us' },
+];
+
+const whatsapp = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '255754123456').replace(/\D/g, '');
+const email = process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'hello@veenbreeze.co.tz';
+
 export const store = {
-  // Placeholders: replace with the business's real details before launch.
-  whatsapp: '255000000000',
-  email: 'hello@veenbreeze.example',
-  showroom: 'Showroom address to be confirmed',
-  hours: 'Opening hours to be confirmed',
+  whatsapp,
+  email,
+  showroom: 'Mikocheni B, Haile Selassie Road, Dar es Salaam',
+  hours: 'Mon – Sat: 10 am – 8 pm · Sun: 11 am – 6 pm',
   deliveryFee: 5000,
   freeDeliveryFrom: 150000,
   lowStockAt: 8,
 };
 
+export const findProduct = (id: string) => products.find((p) => p.id === id);
+
 export const unitPrice = (p: Product) => p.salePrice ?? p.price;
+
+export type CartLineItem = { line: CartLine; product: Product };
+
+export const resolveCartLines = (items: CartLine[]): CartLineItem[] =>
+  items.flatMap((line) => {
+    const product = findProduct(line.productId);
+    return product ? [{ line, product }] : [];
+  });
+
+export const cartSubtotal = (lines: CartLineItem[]) =>
+  lines.reduce((total, { line, product }) => total + unitPrice(product) * line.quantity, 0);
 
 export const money = (n: number) =>
   new Intl.NumberFormat('en-TZ', { style: 'currency', currency: 'TZS', maximumFractionDigits: 0 }).format(n);

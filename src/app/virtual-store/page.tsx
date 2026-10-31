@@ -23,6 +23,7 @@ export default function VirtualStore() {
           <Link className="text-link" href="/"><ArrowLeft size={15} /> Exit</Link>
         </div>
       </div>
+
       {fallback ? (
         <div className="page-wrap">
           <p>The 3D experience could not start on this device. Continue shopping in the product catalogue.</p>
@@ -31,7 +32,8 @@ export default function VirtualStore() {
       ) : (
         <Boutique onFallback={() => setFallback(true)} />
       )}
-      <p className="store-caption">Drag to look around · click a garment to inspect · sample procedural 3D garments (not product photography).</p>
+
+      <p className="store-caption">Drag to look around · click a garment to view its details.</p>
     </div>
   );
 }

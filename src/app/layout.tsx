@@ -2,10 +2,13 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AnnouncementBar, Footer, Header, WhatsAppFab } from '../components';
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 export const metadata: Metadata = {
   title: { default: 'Veenbreeze Fashion', template: '%s · Veenbreeze Fashion' },
-  description: 'Considered clothing from Dar es Salaam. Pay with M-Pesa, Tigo Pesa, Airtel Money or cash on delivery.',
-  icons: { icon: '/favicon.svg' },
+  description:
+    'Considered clothing from Dar es Salaam — breathable linen, relaxed tailoring and everyday staples delivered across Tanzania.',
+  icons: { icon: `${basePath}/favicon.svg` },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

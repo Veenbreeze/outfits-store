@@ -2,16 +2,8 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, MessageCircle, Search, ShoppingBag, X } from 'lucide-react';
-import { money, store, whatsappLink } from '../data';
+import { footerHelpLinks, footerShopLinks, money, navLinks, store, whatsappLink } from '../data';
 import { useCart } from '../store';
-
-const navLinks = [
-  { href: '/shop?sort=newest', label: 'New in' },
-  { href: '/shop?audience=Women', label: 'Women' },
-  { href: '/shop?audience=Men', label: 'Men' },
-  { href: '/shop?category=Shirts', label: 'Shirts' },
-  { href: '/shop?sale=1', label: 'Sale', sale: true },
-];
 
 export function AnnouncementBar() {
   return (
@@ -74,30 +66,22 @@ export function Footer() {
         </div>
         <div className="footer-col">
           <b>Shop</b>
-          <Link href="/shop?sort=newest">New in</Link>
-          <Link href="/shop?audience=Women">Women</Link>
-          <Link href="/shop?audience=Men">Men</Link>
-          <Link href="/shop?sale=1">Sale</Link>
-          <Link href="/virtual-store">Virtual boutique</Link>
+          {footerShopLinks.map((l) => <Link key={l.label} href={l.href}>{l.label}</Link>)}
         </div>
         <div className="footer-col">
           <b>Help</b>
-          <Link href="/contact#delivery">Delivery &amp; rates</Link>
-          <Link href="/contact#exchanges">Exchanges &amp; returns</Link>
-          <Link href="/contact#sizes">Size guide</Link>
-          <Link href="/contact">Contact us</Link>
+          {footerHelpLinks.map((l) => <Link key={l.label} href={l.href}>{l.label}</Link>)}
         </div>
         <div className="footer-col">
           <b>Visit</b>
-          <span>{store.showroom}</span>
-          <span>{store.hours}</span>
+          <p>{store.showroom}</p>
+          <p>{store.hours}</p>
           <a href={`mailto:${store.email}`}>{store.email}</a>
           <Link href="/about">Our story</Link>
         </div>
       </div>
       <div className="footer-base">
-        <span>© 2026 Veenbreeze Fashion. Demo collection.</span>
-        <span>M-Pesa · Tigo Pesa · Airtel Money · Cash on delivery</span>
+        <span>© 2026 Veenbreeze Fashion.</span>
       </div>
     </footer>
   );

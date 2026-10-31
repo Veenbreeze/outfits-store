@@ -37,7 +37,7 @@ export function Newsletter() {
         ) : (
           <form onSubmit={(e) => { e.preventDefault(); setDone(true); }}>
             <label htmlFor="newsletter-contact" className="sr-only">Email or WhatsApp number</label>
-            <input id="newsletter-contact" placeholder="Email or WhatsApp number" required />
+            <input id="newsletter-contact" placeholder="Email address or phone number" required />
             <button className="button" type="submit">Join</button>
           </form>
         )}
