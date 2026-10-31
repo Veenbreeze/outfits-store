@@ -1,2 +1,111 @@
-'use client';import {useMemo,useState} from 'react';import {Search} from 'lucide-react';import {products} from '../../data';import {ProductGrid} from '../../components';
-export default function Shop(){const [q,SQ]=useState(''),[category,SC]=useState('All'),[size,SS]=useState('All'),[color,SCOL]=useState('All'),[sort,SSO]=useState('featured');const list=useMemo(()=>products.filter(p=>(category==='All'||p.category===category)&&(size==='All'||p.sizes.includes(size))&&(color==='All'||p.colors.some(c=>c.name===color))&&(!q||`${p.name} ${p.description} ${p.category}`.toLowerCase().includes(q.toLowerCase()))).sort((a,b)=>sort==='price-low'?(a.salePrice??a.price)-(b.salePrice??b.price):sort==='price-high'?(b.salePrice??b.price)-(a.salePrice??a.price):sort==='newest'?Number(b.newArrival)-Number(a.newArrival):Number(b.featured)-Number(a.featured)),[q,category,size,color,sort]);return <div className="page-wrap"><span className="eyebrow">THE COLLECTION</span><h1 className="page-title">Find your next favourite.</h1><p className="page-intro">A considered edit of pieces made for everyday expression. Sample inventory for demonstration.</p><div className="shop-tools"><label style={{position:'relative'}}><Search size={15} style={{position:'absolute',left:12,top:14}}/><input aria-label="Search products" placeholder="Search the collection" value={q} onChange={e=>SQ(e.target.value)} style={{paddingLeft:36}}/></label><select aria-label="Category" value={category} onChange={e=>SC(e.target.value)}><option>All</option>{Array.from(new Set(products.map(p=>p.category))).map(x=><option key={x}>{x}</option>)}</select><select aria-label="Size" value={size} onChange={e=>SS(e.target.value)}><option>All sizes</option><option>All</option>{Array.from(new Set(products.flatMap(p=>p.sizes))).sort().map(x=><option key={x}>{x}</option>)}</select><select aria-label="Color" value={color} onChange={e=>SCOL(e.target.value)}><option>All colours</option><option>All</option>{Array.from(new Set(products.flatMap(p=>p.colors.map(c=>c.name)))).sort().map(x=><option key={x}>{x}</option>)}</select><select aria-label="Sort products" value={sort} onChange={e=>SSO(e.target.value)}><option value="featured">Featured</option><option value="newest">Newest</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option></select></div><p className="product-sub">{list.length} pieces</p>{list.length?<ProductGrid items={list}/>:<p className="filter-error">No pieces match those filters. Try a different search.</p>}</div>}
+'use client';
+import { Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Search } from 'lucide-react';
+import { categories, products, unitPrice } from '../../data';
+import { ProductGrid } from '../../components';
+
+const audiences = ['All', 'Women', 'Men'];
+const allSizes = Array.from(new Set(products.flatMap((p) => p.sizes)));
+const allColors = Array.from(new Set(products.flatMap((p) => p.colors.map((c) => c.name)))).sort();
+
+function ShopView({ params }: { params: URLSearchParams }) {
+  const [q, setQ] = useState('');
+  const [category, setCategory] = useState(params.get('category') ?? 'All');
+  const [audience, setAudience] = useState(params.get('audience') ?? 'All');
+  const [size, setSize] = useState('All');
+  const [color, setColor] = useState('All');
+  const [saleOnly, setSaleOnly] = useState(params.get('sale') === '1');
+  const [sort, setSort] = useState(params.get('sort') ?? 'featured');
+
+  const list = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return products
+      .filter((p) =>
+        (category === 'All' || p.category === category) &&
+        (audience === 'All' || p.audience === audience || p.audience === 'Unisex') &&
+        (size === 'All' || p.sizes.includes(size)) &&
+        (color === 'All' || p.colors.some((c) => c.name === color)) &&
+        (!saleOnly || p.salePrice !== undefined) &&
+        (!needle || `${p.name} ${p.description} ${p.category}`.toLowerCase().includes(needle)))
+      .sort((a, b) => {
+        if (sort === 'price-low') return unitPrice(a) - unitPrice(b);
+        if (sort === 'price-high') return unitPrice(b) - unitPrice(a);
+        if (sort === 'newest') return Number(!!b.newArrival) - Number(!!a.newArrival);
+        return Number(!!b.featured) - Number(!!a.featured);
+      });
+  }, [q, category, audience, size, color, saleOnly, sort]);
+
+  const reset = () => { setQ(''); setCategory('All'); setAudience('All'); setSize('All'); setColor('All'); setSaleOnly(false); };
+
+  return (
+    <div className="container page-wrap">
+      <span className="eyebrow">THE COLLECTION</span>
+      <h1 className="page-title">{saleOnly ? 'Sale' : category !== 'All' ? category : 'Shop everything'}</h1>
+
+      <div className="chip-row" role="group" aria-label="Category">
+        {['All', ...categories].map((c) => (
+          <button key={c} type="button" className={category === c ? 'chip active' : 'chip'} aria-pressed={category === c} onClick={() => setCategory(c)}>{c}</button>
+        ))}
+        <button type="button" className={saleOnly ? 'chip chip-sale active' : 'chip chip-sale'} aria-pressed={saleOnly} onClick={() => setSaleOnly(!saleOnly)}>Sale</button>
+      </div>
+
+      <div className="shop-tools">
+        <label className="search-field">
+          <Search size={16} aria-hidden="true" />
+          <span className="sr-only">Search products</span>
+          <input placeholder="Search by name or category" value={q} onChange={(e) => setQ(e.target.value)} />
+        </label>
+        <label><span className="sr-only">For</span>
+          <select value={audience} onChange={(e) => setAudience(e.target.value)}>
+            {audiences.map((a) => <option key={a} value={a}>{a === 'All' ? 'Women & men' : a}</option>)}
+          </select>
+        </label>
+        <label><span className="sr-only">Size</span>
+          <select value={size} onChange={(e) => setSize(e.target.value)}>
+            <option value="All">All sizes</option>
+            {allSizes.map((s) => <option key={s}>{s}</option>)}
+          </select>
+        </label>
+        <label><span className="sr-only">Colour</span>
+          <select value={color} onChange={(e) => setColor(e.target.value)}>
+            <option value="All">All colours</option>
+            {allColors.map((c) => <option key={c}>{c}</option>)}
+          </select>
+        </label>
+        <label className="sort-field"><span className="sr-only">Sort products</span>
+          <select value={sort} onChange={(e) => setSort(e.target.value)}>
+            <option value="featured">Sort: Featured</option>
+            <option value="newest">Sort: Newest</option>
+            <option value="price-low">Sort: Price, low to high</option>
+            <option value="price-high">Sort: Price, high to low</option>
+          </select>
+        </label>
+      </div>
+
+      <p className="result-count" role="status">{list.length} {list.length === 1 ? 'piece' : 'pieces'}</p>
+      {list.length ? (
+        <ProductGrid items={list} />
+      ) : (
+        <div className="empty">
+          <p>No pieces match those filters.</p>
+          <button type="button" className="button" onClick={reset}>Clear filters</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Re-mount when the URL changes so header links like "Women" or "Sale" reset the filters.
+function ShopRoute() {
+  const params = useSearchParams();
+  return <ShopView key={params.toString()} params={new URLSearchParams(params.toString())} />;
+}
+
+export default function Shop() {
+  return (
+    <Suspense fallback={<div className="container page-wrap" />}>
+      <ShopRoute />
+    </Suspense>
+  );
+}

@@ -1,6 +1,6 @@
 # Veenbreeze Fashion
 
-A Next.js App Router demonstration storefront with shared catalog/cart data and a client-rendered Three.js boutique. Product inventory, prices, brand story, and contact details are sample content; the checkout does not submit an order or process payment.
+A static storefront for Veenbreeze Fashion, built with Next.js App Router, React 19, TypeScript, Tailwind CSS, Zustand and React Three Fiber. The catalogue, product pages, shopping bag, checkout request flow and virtual boutique all share one product dataset.
 
 ## Run locally
 
@@ -9,21 +9,46 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. Production commands: `npm run build`, then `npm start`. `npm run typecheck` runs TypeScript validation.
+Open http://localhost:3000.
 
-## Product assets
+```bash
+npm run typecheck   # TypeScript validation
+npm run lint        # ESLint
+npm run build       # static export into out/
+npm start           # serve a production build locally
+```
 
-Product catalog is in `src/data.ts`; product photos are current remote Unsplash examples, not verified product photography. The virtual rack loads each product's same image URL as a texture on its hanging display, so catalog and boutique stay visually linked. Replace these URLs with owned or licensed optimized imagery before launch. Put licensed/custom GLB or glTF garments in `public/models/clothing/`, hangers in `public/models/hangers/`, and fixtures in `public/models/furniture/`; textures belong in `public/textures/`. Set a product's `modelUrl` to an existing `/models/clothing/...glb` asset. The boutique retains category-specific procedural meshes as loading fallbacks: T-shirts have a crew neckline and sleeve shape; button-up shirts have a collar, placket, buttons, chest pocket, and seam details. Other sample categories also have distinct silhouettes. These are 3D geometry placeholders rather than scanned or photorealistic garments; GLB loading and fabric texture maps are not yet connected. The asset folders contain no garment model files.
+## How the store works
 
-## Configuration and limitations
+- Products, prices, sizes, colours and stock live in `src/data.ts`.
+- The shopping bag persists in browser local storage through `src/store.ts`.
+- Checkout validates the delivery details, then prepares an order summary and sends the customer to WhatsApp to confirm stock, delivery and payment. No payment is processed on the site.
+- The virtual boutique is a client-rendered Three.js scene. Product photos are used as rack textures, with category-shaped procedural garments as loading fallbacks.
+- Shared UI lives in `src/components/`; pages live in `src/app/`.
 
-- Shared sample products power homepage, catalog, product pages, cart, checkout, and boutique.
-- Cart persists in browser local storage. Checkout is a validation-enabled demo; it clears the local demo bag after submission but creates no real order. No payment credentials are collected.
-- Inventory and prices are client-side examples, not authoritative. Production needs a secure backend for product/inventory/order totals and a server-side payment provider integration.
-- Configure real business email, telephone, WhatsApp, policies, delivery rates, and company details before launch. The `.example` contact address is a deliberate placeholder.
-- External fonts and sample Unsplash photography need network access. No AI assistant or messaging integration is connected.
-- The 3D scene uses procedural architecture and category-specific sample garment geometry, not photorealistic clothing assets. Catalog shopping remains available without WebGL.
+## Configuration
+
+Store-wide settings are in the `store` object in `src/data.ts`. The two values that commonly change per deployment are read from build-time environment variables:
+
+| Variable | Purpose | Default |
+| --- | --- | --- |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | WhatsApp number in international format, digits only | `255754123456` |
+| `NEXT_PUBLIC_CONTACT_EMAIL` | Public contact email | `hello@veenbreeze.co.tz` |
+
+Set these as repository variables in GitHub (`Settings → Secrets and variables → Actions → Variables`) before deploying. For local development, put them in `.env.local`.
+
+Product photos are remote Unsplash URLs. Replace them with owned or licensed images in `src/data.ts` before launch.
+
+## Deploy to GitHub Pages
+
+The workflow in `.github/workflows/deploy.yml` builds the static export and publishes it with GitHub Actions.
+
+1. Push the repository to GitHub.
+2. Open **Settings → Pages** and set **Source** to **GitHub Actions**.
+3. Push to `main` or run the workflow manually.
+
+The workflow uses `actions/configure-pages` to detect the correct base path automatically, so the site works both on project pages (`https://<user>.github.io/<repo>/`) and on custom domains. The build writes to `out/` and includes a `.nojekyll` marker so Next.js assets are served correctly.
 
 ## Checks
 
-`npm run typecheck` and `npm run build` are available. No automated interaction test suite is configured.
+`npm run typecheck`, `npm run lint` and `npm run build` must pass before deployment. The workflow runs all three on every pull request and on every push to `main`.
